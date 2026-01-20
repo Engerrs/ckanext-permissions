@@ -12,7 +12,7 @@ The extension allows you to build a Access Control List (ACL) system within CKAN
 
 ### Roles
 
-The extension has a 3 default roles: `anonymous`, `user` and `sysadmin`. And allows you to define custom roles.
+The extension has a 3 default roles: `anonymous`, `authenticated` and `administrator`. And allows you to define custom roles.
 
 ![roles.png](doc/roles.png)
 
@@ -31,12 +31,42 @@ Compatibility with core CKAN versions:
 | --------------- | ------------- |
 | 2.9 and earlier | no            |
 | 2.10+           | yes           |
+| 2.11+           | yes           |
 
 
 ## Installation
 
-Install it from `pypi` (TBD) or from source if you know what you are doing. Refer to CKAN
-[documentation](https://docs.ckan.org/en/latest/extensions/tutorial.html#installing-the-extension) to know, how to install extension from source.
+Using GIT Clone:
+
+1. Activate your CKAN virtual environment, for example:
+
+     . /usr/lib/ckan/default/bin/activate
+
+2. Clone the source and install it on the virtualenv
+
+    git clone https://github.com/DataShades/ckanext-permissions.git
+
+    cd ckanext-permissions
+
+    pip install -e .
+
+3. Add `permissions permissions_manager` to the `ckan.plugins` setting in your CKAN
+   config file (by default the config file is located at
+   `/etc/ckan/default/ckan.ini`).
+
+4. Initialize DB tables:
+
+    ckan -c PATH_TO_CONFIG db upgrade
+
+5. Initialiaze default Roles:
+
+    ckan -c PATH_TO_CONFIG permissions init-default-roles
+
+6. Add Authenticated default role to all existing Users:
+
+    ckan -c PATH_TO_CONFIG permissions assign-default-user-roles
+
+7. Restart CKAN.
 
 
 ## Config settings

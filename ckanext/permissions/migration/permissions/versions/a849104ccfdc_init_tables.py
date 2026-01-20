@@ -62,15 +62,6 @@ def upgrade():
         sa.Column("permission", sa.String(), nullable=False, primary_key=True),
     )
 
-    # Insert default roles
-    op.execute(
-        "INSERT INTO perm_role (id, label, description) VALUES "
-        "('anonymous', 'Anonymous', 'Default role for anonymous users'), "
-        "('user', 'User', 'Regular user that will be assigned automatically for "
-        "all users on a portal'), "
-        "('sysadmin', 'Sysadmin', 'Superuser that can do everything') "
-    )
-
 
 def downgrade():
     op.drop_table("perm_role_permission")

@@ -128,7 +128,9 @@ def check_permission(
     ]
 
     if user.sysadmin:
-        roles.append({"role_id": perm_const.Roles.Sysadmin.value, "scope": "global"})
+        roles.append(
+            {"role_id": perm_const.Roles.Administrator.value, "scope": "global"}
+        )
 
     for role in roles:
         if scope not in role["scope"]:
@@ -140,16 +142,19 @@ def check_permission(
     return False
 
 
-def assign_role_to_user(user_id: str, role_id: str, scope: str = "global"):
+def assign_role_to_user(
+    user_id: str, role_id: str, scope: str = "global", scope_id: str | None = None
+):
     """Assign role to an User.
 
     Args:
         role_id: The role to assign
         user_id: The user to assign the role to
         scope: The scope of the role
+        scope_id: The scope ID of the role
     """
 
-    scope_roles = perm_model.UserRole.get(user_id, scope)
+    scope_roles = perm_model.UserRole.get(user_id, scope, scope_id)
 
     if role_id not in [role.role_id for role in scope_roles]:
         perm_model.UserRole.create(user_id, role_id)
