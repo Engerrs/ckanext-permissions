@@ -11,16 +11,16 @@ class TestRoleAutoassignment:
     def test_assign_user_role_on_create(self, user):
         """Test if a role is assigned to a user when it's created"""
         roles = tk.h.get_user_roles(user["id"])
-        assert roles == ["user"]
+        assert roles == ["authenticated"]
 
     def test_user_roles_deleted_with_role(self, user, test_role):
         """Test if user roles are deleted when the role is deleted"""
         perm_model.UserRole.create(user["id"], test_role["id"])
 
         result = tk.h.get_user_roles(user["id"])
-        assert "user" in result
+        assert "authenticated" in result
         assert "creator" in result
 
         call_action("permission_role_delete", id=test_role["id"])
 
-        assert tk.h.get_user_roles(user["id"]) == ["user"]
+        assert tk.h.get_user_roles(user["id"]) == ["authenticated"]

@@ -40,22 +40,22 @@ class TestGetRolePermissions:
 @pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestGetUserRoles:
     def test_only_default_roles(self, user: dict[str, str]):
-        assert helpers.get_user_roles(user["id"]) == ["user"]
+        assert helpers.get_user_roles(user["id"]) == ["authenticated"]
 
     def test_add_new_role(self, user: dict[str, str], test_role: dict[str, str]):
         model.UserRole.create(user["id"], test_role["id"])
         result = helpers.get_user_roles(user["id"])
-        assert "user" in result
+        assert "authenticated" in result
         assert test_role["id"] in result
 
     def test_remove_role(self, user: dict[str, str], test_role: dict[str, str]):
         model.UserRole.create(user["id"], test_role["id"])
         result = helpers.get_user_roles(user["id"])
-        assert "user" in result
+        assert "authenticated" in result
         assert test_role["id"] in result
 
         model.UserRole.delete(user["id"], test_role["id"])
-        assert helpers.get_user_roles(user["id"]) == ["user"]
+        assert helpers.get_user_roles(user["id"]) == ["authenticated"]
 
 
 @pytest.mark.usefixtures("with_plugins", "clean_db")

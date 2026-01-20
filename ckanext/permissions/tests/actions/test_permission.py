@@ -12,20 +12,28 @@ class TestPermissionsUpdate:
         result = call_action(
             "permissions_update",
             permissions={
-                "perm_1": {"anonymous": False, "user": True, "sysadmin": True},
-                "perm_2": {"anonymous": False, "user": True, "sysadmin": True},
+                "perm_1": {
+                    "anonymous": False,
+                    "authenticated": True,
+                    "administrator": True,
+                },
+                "perm_2": {
+                    "anonymous": False,
+                    "authenticated": True,
+                    "administrator": True,
+                },
             },
         )
 
         assert not result["missing_permissions"]
         assert result["updated_permissions"] == {
-            "perm_1": {"user": True, "sysadmin": True},
-            "perm_2": {"user": True, "sysadmin": True},
+            "perm_1": {"authenticated": True, "administrator": True},
+            "perm_2": {"authenticated": True, "administrator": True},
         }
 
         assert not perm_model.RolePermission.get("anonymous", "perm_1")
-        assert perm_model.RolePermission.get("user", "perm_1")
-        assert perm_model.RolePermission.get("sysadmin", "perm_1")
+        assert perm_model.RolePermission.get("authenticated", "perm_1")
+        assert perm_model.RolePermission.get("administrator", "perm_1")
 
         result = call_action(
             "permissions_update",
@@ -52,7 +60,7 @@ class TestPermissionsUpdate:
         with pytest.raises(tk.ValidationError, match="Invalid permission value"):
             call_action(
                 "permissions_update",
-                permissions={"perm_1": {"anonymous": "xxx", "user": "yyy"}},
+                permissions={"perm_1": {"anonymous": "xxx", "authenticated": "yyy"}},
             )
 
     def test_role_id_not_exists(self):
