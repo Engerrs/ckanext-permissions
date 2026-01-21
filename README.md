@@ -58,11 +58,7 @@ Using GIT Clone:
 
     ckan -c PATH_TO_CONFIG db upgrade
 
-5. Initialiaze default Roles:
-
-    ckan -c PATH_TO_CONFIG permissions init-default-roles
-
-6. Add Authenticated default role to all existing Users:
+5. Initialize default Roles and add Authenticated default role to all existing Users:
 
     ckan -c PATH_TO_CONFIG permissions assign-default-user-roles
 

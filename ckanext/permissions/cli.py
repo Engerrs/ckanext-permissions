@@ -6,9 +6,7 @@ import ckanext.permissions.const as perm_const
 from ckanext.permissions import model as perm_model
 from ckanext.permissions import utils
 
-
-def get_commands():
-    return [permissions]
+__all__ = ["permissions"]
 
 
 @click.group()
@@ -18,36 +16,40 @@ def permissions():
 
 @permissions.command()
 def init_default_roles():
-    """Create default roles (anonymous, authenticated, sysadmin) in the database"""
-    default_roles = [
-        ("anonymous", "Anonymous", "Default role for anonymous users"),
-        (
-            "authenticated",
-            "Authenticated",
-            "Regular user that will be assigned automatically for all users on a portal",
-        ),
-        ("administrator", "Administrator", "Superuser that can do everything"),
-    ]
+    """Create default roles (anonymous, authenticated, administrator) in the database"""
+    created_count = utils.ensure_default_roles()
 
-    for role_id, label, description in default_roles:
-        existing_role = perm_model.Role.get(role_id)
-        if existing_role:
-            click.secho(f"Role '{role_id}' already exists, skipping", fg="yellow")
-        else:
-            perm_model.Role.create(role_id, label, description)
-            click.secho(f"Role '{role_id}' created", fg="green")
+    if created_count > 0:
+        click.secho(f"{created_count} role(s) created successfully", fg="green")
+    else:
+        click.secho("All default roles already exist", fg="yellow")
+
+    return created_count
 
 
 @permissions.command()
 @click.argument("role", default=perm_const.Roles.Authenticated.value, required=False)
 def assign_default_user_roles(role: str):
-    """Assign automatic roles to users"""
-    users = model.User.all()
+    """Assign automatic roles to users (initializes default roles if needed)"""
+    # Ensure default roles exist
+    click.echo("Checking default roles...")
+    created_count = utils.ensure_default_roles()
+
+    if created_count > 0:
+        click.secho(f"{created_count} role(s) created", fg="green")
+        click.echo()  # Empty line for readability
+
+    # Check if the specified role exists
+    if not perm_model.Role.get(role):
+        click.secho(f"Error: Role '{role}' does not exist", fg="red")
+        return
+
+    users = model.Session.query(model.User).filter(model.User.state == "active").all()
 
     for user in users:
         utils.assign_role_to_user(user.id, role)
 
-    click.secho(f"Role '{role}' assigned to all users", fg="green")
+    click.secho(f"Role '{role}' assigned to {len(users)} active user(s)", fg="green")
 
 
 @permissions.command()
@@ -61,13 +63,14 @@ def assign_default_user_roles(role: str):
 def remove_role_from_users(role: str, user_ids: tuple[str, ...]):
     """Remove automatic roles from users"""
     if user_ids:
-        users = [model.User.get(user_id) for user_id in user_ids]
+        users = (
+            model.Session.query(model.User).filter(model.User.id.in_(user_ids)).all()
+        )
     else:
         users = model.User.all()
 
     for user in users:
-        if user:
-            utils.remove_role_from_user(user.id, role)
+        utils.remove_role_from_user(user.id, role)
 
     if user_ids:
         click.secho(

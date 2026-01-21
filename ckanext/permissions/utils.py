@@ -123,20 +123,11 @@ def check_permission(
             is not None
         )
 
-    roles = [
-        {"role_id": role.role_id, "scope": role.scope} for role in user.roles  # type: ignore
-    ]
-
-    if user.sysadmin:
-        roles.append(
-            {"role_id": perm_const.Roles.Administrator.value, "scope": "global"}
-        )
-
-    for role in roles:
-        if scope not in role["scope"]:
+    for role in user.roles:  # type: ignore
+        if scope not in role.scope:
             continue
 
-        if perm_model.RolePermission.get(str(role["role_id"]), permission) is not None:
+        if perm_model.RolePermission.get(str(role.role_id), permission) is not None:
             return True
 
     return False
@@ -172,3 +163,35 @@ def remove_role_from_user(user_id: str, role_id: str):
 
     if role_id in [role.role_id for role in roles]:
         perm_model.UserRole.delete(user_id, role_id)
+
+
+def ensure_default_roles() -> int:
+    """Ensure default roles exist in the database.
+
+    Creates anonymous, authenticated, and administrator roles if they don't exist.
+
+    Returns:
+        int: Number of roles created
+    """
+    default_roles = [
+        ("anonymous", "Anonymous", "Default role for anonymous users"),
+        (
+            "authenticated",
+            "Authenticated",
+            "Regular user that will be assigned automatically for all users on a portal",
+        ),
+        (
+            "administrator",
+            "Administrator",
+            "Administrator that should have all permissions",
+        ),
+    ]
+
+    created_count = 0
+    for role_id, label, description in default_roles:
+        existing_role = perm_model.Role.get(role_id)
+        if not existing_role:
+            perm_model.Role.create(role_id, label, description)
+            created_count += 1
+
+    return created_count

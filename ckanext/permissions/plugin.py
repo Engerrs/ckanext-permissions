@@ -8,10 +8,9 @@ from ckanext.permissions import const as perm_const
 from ckanext.permissions import implementation
 from ckanext.permissions import types as perm_types
 from ckanext.permissions import utils
-from ckanext.permissions.cli import get_commands
 
 
-@tk.blanket.cli(get_commands)
+@tk.blanket.cli
 @tk.blanket.validators
 @tk.blanket.actions
 @tk.blanket.helpers
@@ -59,6 +58,7 @@ class PermissionsPlugin(implementation.PermissionLabels, p.SingletonPlugin):
             data_dict: The action payload
             result: The action result
         """
+
         if action_name != "user_create":
             return
 
