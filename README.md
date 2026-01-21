@@ -56,11 +56,11 @@ Using GIT Clone:
 
 4. Initialize DB tables:
 
-    ckan -c PATH_TO_CONFIG db upgrade
+    `ckan -c PATH_TO_CONFIG db upgrade`
 
 5. Initialize default Roles and add Authenticated default role to all existing Users:
 
-    ckan -c PATH_TO_CONFIG permissions assign-default-user-roles
+    `ckan -c PATH_TO_CONFIG permissions assign-default-user-roles`
 
 7. Restart CKAN.
 
