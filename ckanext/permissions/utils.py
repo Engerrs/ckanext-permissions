@@ -16,7 +16,9 @@ import ckanext.permissions.types as perm_types
 
 
 def parse_permission_group_schemas() -> dict[str, perm_types.PermissionGroup]:
-    groups = _load_schemas(tk.aslist(tk.config.get("ckanext.permissions.permission_groups")), "name")
+    groups = _load_schemas(
+        tk.aslist(tk.config.get("ckanext.permissions.permission_groups")), "name"
+    )
 
     validate_groups(groups)
 
@@ -63,7 +65,9 @@ def validate_groups(groups: dict[str, perm_types.PermissionGroup]) -> bool:
     permissions = []
 
     for group in groups.values():
-        data, errors = tk.navl_validate(cast(dict, group), perm_schema.permission_group_schema())
+        data, errors = tk.navl_validate(
+            cast(dict, group), perm_schema.permission_group_schema()
+        )
 
         if errors:
             raise tk.ValidationError(errors)
@@ -76,7 +80,9 @@ def validate_groups(groups: dict[str, perm_types.PermissionGroup]) -> bool:
 
         for permission in data["permissions"]:
             if permission["key"] in permissions:
-                raise tk.ValidationError(f"Permission {permission['key']} is duplicated")
+                raise tk.ValidationError(
+                    f"Permission {permission['key']} is duplicated"
+                )
 
             permissions.append(permission["key"])
 
@@ -99,7 +105,9 @@ def get_registered_roles() -> dict[str, str]:
     return {role["id"]: role["label"] for role in perm_model.Role.all()}
 
 
-def check_permission(permission: str, user: model.User | model.AnonymousUser, scope: str = "global") -> bool:
+def check_permission(
+    permission: str, user: model.User | model.AnonymousUser, scope: str = "global"
+) -> bool:
     """Check if user has the given permission through any of their roles.
 
     Args:
@@ -110,7 +118,10 @@ def check_permission(permission: str, user: model.User | model.AnonymousUser, sc
         bool: True if user has the permission, False otherwise
     """
     if isinstance(user, model.AnonymousUser):
-        return perm_model.RolePermission.get(perm_const.Roles.Anonymous.value, permission) is not None
+        return (
+            perm_model.RolePermission.get(perm_const.Roles.Anonymous.value, permission)
+            is not None
+        )
 
     for role in user.roles:  # type: ignore
         if scope not in role.scope:
@@ -120,3 +131,67 @@ def check_permission(permission: str, user: model.User | model.AnonymousUser, sc
             return True
 
     return False
+
+
+def assign_role_to_user(
+    user_id: str, role_id: str, scope: str = "global", scope_id: str | None = None
+):
+    """Assign role to an User.
+
+    Args:
+        role_id: The role to assign
+        user_id: The user to assign the role to
+        scope: The scope of the role
+        scope_id: The scope ID of the role
+    """
+
+    scope_roles = perm_model.UserRole.get(user_id, scope, scope_id)
+
+    if role_id not in [role.role_id for role in scope_roles]:
+        perm_model.UserRole.create(user_id, role_id)
+
+
+def remove_role_from_user(user_id: str, role_id: str):
+    """Remove role from an User.
+
+    Args:
+        role_id: The role to remove
+        user_id: The user to remove the role from
+    """
+
+    roles = perm_model.UserRole.get(user_id)
+
+    if role_id in [role.role_id for role in roles]:
+        perm_model.UserRole.delete(user_id, role_id)
+
+
+def ensure_default_roles() -> int:
+    """Ensure default roles exist in the database.
+
+    Creates anonymous, authenticated, and administrator roles if they don't exist.
+
+    Returns:
+        int: Number of roles created
+    """
+    default_roles = [
+        ("anonymous", "Anonymous", "Default role for anonymous users"),
+        (
+            "authenticated",
+            "Authenticated",
+            "Regular user that will be assigned automatically for all users on a portal",
+        ),
+        (
+            "administrator",
+            "Administrator",
+            "Administrator that should have all permissions",
+        ),
+    ]
+
+    created_count = 0
+    for role_id, label, description in default_roles:
+        existing_role = perm_model.Role.get(role_id)
+        if not existing_role:
+            perm_model.Role.create(role_id, label, description)
+            created_count += 1
+
+    return created_count

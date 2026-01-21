@@ -6,5 +6,5 @@ ROLE_ID_MAX_LENGTH = 50
 
 class Roles(Enum):
     Anonymous = "anonymous"
-    User = "user"
-    Sysadmin = "sysadmin"
+    Authenticated = "authenticated"
+    Administrator = "administrator"

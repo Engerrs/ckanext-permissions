@@ -6,11 +6,11 @@ from ckan import types
 
 from ckanext.permissions import const as perm_const
 from ckanext.permissions import implementation
-from ckanext.permissions import model as perm_model
 from ckanext.permissions import types as perm_types
 from ckanext.permissions import utils
 
 
+@tk.blanket.cli
 @tk.blanket.validators
 @tk.blanket.actions
 @tk.blanket.helpers
@@ -58,10 +58,10 @@ class PermissionsPlugin(implementation.PermissionLabels, p.SingletonPlugin):
             data_dict: The action payload
             result: The action result
         """
+
         if action_name != "user_create":
             return
 
-        global_roles = perm_model.UserRole.get(result["id"], "global")
-
-        if perm_const.Roles.User.value not in global_roles:
-            perm_model.UserRole.create(result["id"], perm_const.Roles.User.value)
+        utils.assign_role_to_user(
+            result["id"], perm_const.Roles.Authenticated.value, "global"
+        )

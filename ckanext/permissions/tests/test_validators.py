@@ -28,7 +28,9 @@ class TestRoleDoesntExists:
 class TestRoleExists:
     def test_role_exists_valid(self, test_role: dict[str, str]):
         """Test permission_role_exists with existing role."""
-        assert perm_validators.permission_role_exists(test_role["id"]) == test_role["id"]
+        assert (
+            perm_validators.permission_role_exists(test_role["id"]) == test_role["id"]
+        )
 
     def test_role_exists_invalid(self):
         """Test permission_role_exists with non-existent role."""
@@ -91,6 +93,6 @@ class TestNotDefaultRole:
     def test_invalid_default_role(self):
         """Test not_default_role with default role."""
         with pytest.raises(tk.Invalid) as e:
-            perm_validators.not_default_role(Roles.Sysadmin.value)
+            perm_validators.not_default_role(Roles.Administrator.value)
 
-        assert e.value.error == f"Role {Roles.Sysadmin.value} is a default role."
+        assert e.value.error == f"Role {Roles.Administrator.value} is a default role."

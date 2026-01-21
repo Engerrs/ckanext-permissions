@@ -13,8 +13,8 @@ class TestGetRegisteredRoles:
         assert len(result) == 3
 
         assert result[const.Roles.Anonymous.value]
-        assert result[const.Roles.User.value]
-        assert result[const.Roles.Sysadmin.value]
+        assert result[const.Roles.Authenticated.value]
+        assert result[const.Roles.Administrator.value]
 
     def test_with_custom_roles(self, test_role: dict[str, str]):
         result = helpers.get_registered_roles()
@@ -40,28 +40,28 @@ class TestGetRolePermissions:
 @pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestGetUserRoles:
     def test_only_default_roles(self, user: dict[str, str]):
-        assert helpers.get_user_roles(user["id"]) == ["user"]
+        assert helpers.get_user_roles(user["id"]) == ["authenticated"]
 
     def test_add_new_role(self, user: dict[str, str], test_role: dict[str, str]):
         model.UserRole.create(user["id"], test_role["id"])
         result = helpers.get_user_roles(user["id"])
-        assert "user" in result
+        assert "authenticated" in result
         assert test_role["id"] in result
 
     def test_remove_role(self, user: dict[str, str], test_role: dict[str, str]):
         model.UserRole.create(user["id"], test_role["id"])
         result = helpers.get_user_roles(user["id"])
-        assert "user" in result
+        assert "authenticated" in result
         assert test_role["id"] in result
 
         model.UserRole.delete(user["id"], test_role["id"])
-        assert helpers.get_user_roles(user["id"]) == ["user"]
+        assert helpers.get_user_roles(user["id"]) == ["authenticated"]
 
 
 @pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestIsDefaultRole:
     def test_is_default_role(self):
-        assert helpers.is_default_role(const.Roles.User.value)
+        assert helpers.is_default_role(const.Roles.Authenticated.value)
 
     def test_is_not_default_role(self, test_role: dict[str, str]):
         assert not helpers.is_default_role("test_role")

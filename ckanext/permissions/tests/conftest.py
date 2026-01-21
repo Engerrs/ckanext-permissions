@@ -7,21 +7,10 @@ from pytest_factoryboy import register
 
 from ckan.tests import factories
 
-import ckanext.permissions.const as perm_const
 import ckanext.permissions.model as perm_model
+from ckanext.permissions import utils as perm_utils
 
 fake = Faker()
-
-
-def initiate_default_roles():
-    """When the clean_db fixture is used, the migrations won't be reruned,
-    so we need to initiate the default roles manually"""
-
-    for role in perm_const.Roles:
-        if perm_model.Role.get(role.value):
-            continue
-
-        perm_model.Role.create(role.value, role.value, f"Default role for {role.value}")
 
 
 @pytest.fixture()
@@ -29,7 +18,7 @@ def clean_db(reset_db, migrate_db_for):
     reset_db()
     migrate_db_for("permissions")
 
-    initiate_default_roles()
+    perm_utils.ensure_default_roles()
 
 
 @register(_name="test_role")
