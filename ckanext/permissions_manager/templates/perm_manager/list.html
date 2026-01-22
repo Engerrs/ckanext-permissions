@@ -9,13 +9,24 @@
 {% block primary_content_inner %}
     {% set registered_roles = h.get_registered_roles() %}
 
-    {{ form.input(
-        'search_permissions',
-        id='search-permissions',
-        label=_('Search Permissions'),
-        placeholder=_('Type to search...'),
-        attrs={'data-module': 'perm-search-permissions', 'class': 'form-control', 'data-module-target-table': 'permissions-table'},
-    ) }}
+    <div class="d-flex gap-3 align-items-center mb-3">
+        <div class="flex-grow-1">
+            {% call form.input(
+                'search_permissions',
+                id='search-permissions',
+                label=_('Search Permissions'),
+                placeholder=_('Type to search...'),
+                classes=[],
+                attrs={'data-module': 'perm-search-permissions', 'class': 'form-control', 'data-module-target-table': 'permissions-table'},
+            ) %}
+            {% endcall %}
+        </div>
+        <div>
+            <button type="button" id="clear-search" class="btn btn-danger" disabled>
+                {{ _('Clear') }}
+            </button>
+        </div>
+    </div>
 
     <form action="" method="POST">
         {{ h.csrf_input() }}
